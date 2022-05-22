@@ -26,21 +26,10 @@ def tried_with_matplotlib():
 
     fig = plt.figure(figsize=(w, h))
 
-    # p = patches.Rectangle((0, 0.945), 1.0, 0.01)
-    # fig.add_artist(p)
-    #
-    # p = patches.Rectangle((0.495, 0.), 0.01, 1.0)
-    # fig.add_artist(p)
-    # p = patches.Rectangle((0., 0.), 0.01, 1.0)
-    # fig.add_artist(p)
-    # p = patches.Rectangle((0.99, 0.), 0.01, 1.0)
-    # fig.add_artist(p)
-
     main = Person('Firstname', 'Lastname', dt(1970, 1, 1), 'Hamburg, DE', dt(1970, 1, 1), 'Fultonham, NY, USA')
     dimensions = Dimensions((col2, rows[0]), box_w, box_h, (w, h))
     # plot_box(dimensions, main, fig)
     spouse = Person('Spouse', 'Lastname', dt(1970, 1, 1), 'Hamburg, DE', dt(1970, 1, 1), 'Fultonham, NY, USA')
-
 
     mother = Person('Parent1', 'Lastname', dt(1950, 1, 1), 'Hamburg, DE', dt(1950, 1, 1), 'Fultonham, NY, USA')
     dimensions = Dimensions((col1, rows[0]), box_w, box_h, (w, h))
@@ -80,8 +69,8 @@ def try_2():
 
     page_info = PageInfo(page_width=10, page_height=None, margin=(0.05, 0.05), gap=(0.5, 0.2), minimum_gap_y=0.05)
 
-    family_parents = Family(father=None, mother=None, children=[])
-    family = Family(father=None, mother=main, children=[], father_plotted_top=False)
+    family_parents = Family(parent1=None, parent2=None, children=[])
+    family = Family(parent1=None, parent2=main, children=[], father_plotted_top=False)
     boxes_to_plot, lines_to_plot, page_info = pp.get_diagram_plot_position(page_info, family_parents,
                                                                            families_person=[family])
     fig = pwm.plot_on_figure(page_info, boxes_to_plot, lines_to_plot)
@@ -167,12 +156,13 @@ def try_5():
     fig = pwm.plot_on_figure(page_info, boxes_to_plot, lines_to_plot)
     plt.show()
 
+
 def main():
     logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)s %(message)s', datefmt='%H:%M:%S',
                         level=logging.INFO)
     logging.getLogger().setLevel(logging.INFO)
-    # tried_with_matplotlib()
-    try_5()
+    tried_with_matplotlib()
+    # try_5()
 
 
 if __name__ == "__main__":

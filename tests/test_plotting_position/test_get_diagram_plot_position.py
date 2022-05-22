@@ -14,8 +14,8 @@ class Test(TestCase):
 
         page_info = PageInfo(page_width=10, page_height=None, margin=(0.05, 0.05), gap=(0.5, 0.2), minimum_gap_y=0.05)
 
-        family_parents =  None  # Family(father=None, mother=None, children=[])
-        family = Family(father=None, mother=main, children=[], father_plotted_top=False)
+        family_parents =  None  # Family(parent1=None, parent2=None, children=[])
+        family = Family(parent1=None, parent2=main, children=[], father_plotted_top=False)
         boxes_to_plot, lines_to_plot, page_info = pp.get_diagram_plot_position(page_info, family_parents,
                                                                                families_person=[family])
 

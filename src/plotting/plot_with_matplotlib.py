@@ -47,16 +47,16 @@ def plot_line(line: LinePlotInfo, page_info: PageInfo, fig: Figure) -> Figure:
     x, y = (x1 + x2)/2, (y1 + y2) / 2
     if x1 == x2:
         height = y2 - y1
-        _, _, _, _, fig = plot_rectangle(x, y, line.width, height, page_size, fig)
+        _, _, _, _, fig = plot_rectangle(x, y, line.width, height, page_size, fig, plot_shadow=False)
     elif y1 == y2:
         width = x2 - x1
-        _, _, _, _, fig = plot_rectangle(x, y, width, line.width, page_size, fig)
+        _, _, _, _, fig = plot_rectangle(x, y, width, line.width, page_size, fig, plot_shadow=False)
     return fig
 
 
 def plot_rectangle(x: float, y: float, w: float, h: float, page_size: Tuple[float, float],
                    fig: Figure, plot_shadow: bool = True) -> Tuple[float, float, float, float, Figure]:
-    offset = w * 0.01
+    offset = w * 0.02
     offset_x, offset_y = pu.get_non_dimensional_size((offset, offset), page_size)
 
     x, y = pu.get_non_dimensional_size((x, y), page_size)

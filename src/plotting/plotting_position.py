@@ -27,10 +27,10 @@ def get_diagram_plot_position(page_info: PageInfo, family_parents: Optional[Fami
     for ii, family in enumerate(families_person):
         if main_person is None:
             if family.father_plotted_top:
-                main_person = family.father
+                main_person = family.parent1
                 is_father = True
             else:
-                main_person = family.mother
+                main_person = family.parent2
                 is_father = False
         else:
             family.spouse_already_plotted_position = main_person_position
@@ -133,7 +133,7 @@ def plot_parents(family: Family, page_info: PageInfo, parent_column_index: int, 
 
     if spouse2 is None and (spouse1 or not family.one_child_already_plotted):
         # If spouse 2 is None, s/he has already been plotted.
-        if (family.father and family.mother) or family.children:
+        if (family.parent1 and family.parent2) or family.children:
             plot_info_mbox, page_info = add_marriage_box(family, parent_column_index, page_info)
             page_info.column_top_position[parent_column_index] += page_info.minimum_gap_y
             boxes_to_plot += [plot_info_mbox]
@@ -142,7 +142,7 @@ def plot_parents(family: Family, page_info: PageInfo, parent_column_index: int, 
         page_info.column_top_position[parent_column_index] += page_info.gap[1]
         boxes_to_plot += [plot_info_spouse1]
 
-        if (family.father and family.mother) or family.children:
+        if (family.parent1 and family.parent2) or family.children:
             indentation = page_info.indentation * family_number
             start = (family.spouse_already_plotted_position.x + indentation, family.spouse_already_plotted_position.y)
             end = (plot_info_spouse1.x + indentation, plot_info_spouse1.y)
@@ -259,12 +259,12 @@ def add_marriage_box(family: Family, column_index: int, page_info: PageInfo) -> 
 def who_gets_plotted_on_top(family: Family) -> Tuple[Person, Person]:
     """ Which parent goes on top? """
     if family.father_already_plotted:  # mother
-        spouse1, spouse2 = family.mother, None
+        spouse1, spouse2 = family.parent2, None
     elif family.mother_already_plotted:
-        spouse1, spouse2 = family.father, None
+        spouse1, spouse2 = family.parent1, None
     else:
         if family.father_plotted_top:
-            spouse1, spouse2 = family.father, family.mother
+            spouse1, spouse2 = family.parent1, family.parent2
         else:
-            spouse2, spouse1 = family.father, family.mother
+            spouse2, spouse1 = family.parent1, family.parent2
     return spouse1, spouse2

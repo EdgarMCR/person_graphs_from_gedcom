@@ -9,8 +9,10 @@ from gedcom.element.individual import IndividualElement
 from gedcom.element.family import FamilyElement
 from gedcom.parser import Parser
 
-from src.constants import Family, Person
+from src.constants import Family, Person, Dimensions, PageInfo
 import src.parse_gedcom as pg
+import src.plotting.plotting_position as pp
+import src.plotting.plot_with_matplotlib as pwm
 
 
 # Initialize the parser
@@ -173,10 +175,16 @@ def create_mini_graph(fname: str, lname: str, path: Path):
 
 
 def main():
-    path = Path('FamilyTree_Dec2021.ged')
+    path = Path('../FamilyTree_Dec2021.ged')
     root = pg.load_file(path)
     fn, ln = 'Magdalena', 'Sadowska'
-    person = pg.get_person(fname=fn, lname=ln, root_child_elements=root)
+    person = pg.get_person_by_name(fname=fn, lname=ln, root_child_elements=root)
+    family_parents, families = pg.get_all_families_for_individual(person.gedcom_element, root)
+    page_info = PageInfo(page_width=10, page_height=None, margin=(0.05, 0.05), gap=(0.5, 0.2), minimum_gap_y=0.05)
+    boxes_to_plot, lines_to_plot, page_info = pp.get_diagram_plot_position(page_info, family_parents,
+                                                                           families_person=families)
+    fig = pwm.plot_on_figure(page_info, boxes_to_plot, lines_to_plot)
+    plt.show()
     # try_out_parser(path)
     # create_mini_graph(fn, ln, path)
 

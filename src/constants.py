@@ -23,11 +23,14 @@ class Person:
 
     gedcom_element = None
 
+    parent_family: Optional[object] = None
+    families: List = field(default_factory=list)
+
 
 @dataclass
 class Family:
-    father: Optional[Person]
-    mother: Optional[Person]
+    parent1: Optional[Person]
+    parent2: Optional[Person]
 
     children: List[Person]
 
@@ -37,6 +40,7 @@ class Family:
     divorce_date: Optional[dt] = None
     divorce_place: str = ''
 
+    # TODO: this shouldn't really be part of this dataclase - keep data and plotting separate!
     one_child_already_plotted: bool = False
     child_already_plotted_position: Tuple[float, float] = (0, 0)
 

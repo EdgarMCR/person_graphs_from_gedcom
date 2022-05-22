@@ -24,8 +24,8 @@ def plot_family(stride: Tuple[float, float], dimensions: Dimensions, family: Fam
     child_bottom = draw_family_lines(stride, dimensions, family, fig)
 
     mother = Person()
-    if family.mother:
-        mother = family.mother
+    if family.parent2:
+        mother = family.parent2
     plot_person_box(dimensions, mother, fig)
 
     dim = dc(dimensions)
@@ -34,8 +34,8 @@ def plot_family(stride: Tuple[float, float], dimensions: Dimensions, family: Fam
 
     dim.position = (x, y)
     father = Person()
-    if family.father:
-        father = family.father
+    if family.parent1:
+        father = family.parent1
     plot_person_box(dim, father, fig)
 
     gap = stride[1] - dimensions.height
