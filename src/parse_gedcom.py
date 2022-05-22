@@ -1,3 +1,4 @@
+import re
 import time
 from pathlib import Path
 from datetime import datetime as dt
@@ -76,8 +77,8 @@ def convert_gedcom_to_person(element: IndividualElement) -> Person:
     person = Person()
     person.first_name, person.last_name = element.get_name()
 
-    person.birth_place, person.birth_date = get_event_place_and_date(BIRTH, element)
-    person.death_place, person.death_date = get_event_place_and_date(DEATH, element)
+    person.birth_place, person.birth_date, person.birth_date_year = get_event_place_and_date(BIRTH, element)
+    person.death_place, person.death_date, person.birth_date_year = get_event_place_and_date(DEATH, element)
 
     person.sex = get_element_value(SEX, element)
 
@@ -96,15 +97,20 @@ def get_family_element(id: str, root_child_elements) -> Optional[FamilyElement]:
     return family
 
 
-def get_event_place_and_date(tag: str, element: Element) -> Tuple[Optional[str], Optional[dt]]:
-    place, d = None, None
+def get_event_place_and_date(tag: str, element: Element) -> Tuple[Optional[str], Optional[dt], Optional[int]]:
+    place, d, ds = None, None, None
     event = get_child_element(tag, element)
     if event:
         place = get_element_value(PLACE, event)
         date = get_element_value(DATE, event)
         if date:
-            d = dt.strptime(date, '%d %b %Y')
-    return place, d
+            try:
+                d = dt.strptime(date, '%d %b %Y')
+                ds = d.year
+            except ValueError:
+                if match := re.search(r'\d{4}', date):
+                    ds = int(match.group())
+    return place, d, ds
 
 
 def get_child_element(tag: str, element: Element) -> Optional[Element]:
@@ -145,10 +151,11 @@ def get_all_families_for_individual(person: IndividualElement, root) -> Tuple[Fa
     parent_family = get_family_for_individual(person, root, True)
     if parent_family:
         parent_family = parent_family[0]
+    else:
+        parent_family = None
     families = get_family_for_individual(person, root, False)
-    for ii in range(1, len(families)):
-        families[ii].one_child_already_plotted = True
     return parent_family, families
+
 
 def get_family_for_individual(person: IndividualElement, root, person_is_child: bool) -> List[Family]:
     families = []
@@ -168,22 +175,18 @@ def get_family_for_individual(person: IndividualElement, root, person_is_child: 
             continue
 
         parents, children = get_people_in_family(fam_ele, root)
-
-        # TODO: Plotting is still too tightly coupled - the second parent is at the centre of the plot
         p1, p2 = None, None
-        if parents[0].gedcom_element.get_pointer() == person.get_pointer():
-            p2 = parents[0]
-            if len(parents) > 1:
-                p1 = parents[1]
-        else:
+        if len(parents) == 2:
+            p1, p2 = parents
+        elif len(parents) == 1:
             p1 = parents[0]
-            if len(parents) > 1:
-                p2 = parents[1]
-        marriage_place, marriage_date = get_event_place_and_date(MARRIAGE, fam_ele)
-        divorce_place, divorce_date = get_event_place_and_date(DIVORCE, fam_ele)
+
+        marriage_place, marriage_date, marriage_year = get_event_place_and_date(MARRIAGE, fam_ele)
+        divorce_place, divorce_date, divorce_year = get_event_place_and_date(DIVORCE, fam_ele)
 
         fam = Family(parent1=p1, parent2=p2, children=children, marriage_place=marriage_place,
-                     marriage_date=marriage_date, divorce_place=divorce_place, divorce_date=divorce_date)
+                     marriage_date=marriage_date, marriage_date_year=marriage_year, divorce_place=divorce_place,
+                     divorce_date=divorce_date, divorce_date_year=divorce_year)
         families.append(fam)
     return families
 
@@ -191,12 +194,13 @@ def get_family_for_individual(person: IndividualElement, root, person_is_child: 
 def get_people_in_family(family_ele: FamilyElement, root) -> Tuple[List[Person], List[Person]]:
     parents, children = [], []
 
-    husband_pt = get_child_element(HUSBAND, family_ele)
-    if husband := get_person(husband_pt.get_value(), root):
-        parents.append(husband)
-    wife_pt = get_child_element(WIFE, family_ele)
-    if wife := get_person(wife_pt.get_value(), root):
-        parents.append(wife)
+    if husband_pt := get_child_element(HUSBAND, family_ele):
+        if husband := get_person(husband_pt.get_value(), root):
+            parents.append(husband)
+
+    if wife_pt := get_child_element(WIFE, family_ele):
+        if wife := get_person(wife_pt.get_value(), root):
+            parents.append(wife)
 
     children_pts = get_child_element_values(CHILD, family_ele)
     for ch_pt in children_pts:

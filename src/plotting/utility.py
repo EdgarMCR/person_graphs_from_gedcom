@@ -3,7 +3,7 @@ import time
 import logging
 from copy import deepcopy as dc
 from datetime import datetime as dt
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 from dataclasses import dataclass
 
 import matplotlib.pylab as plt
@@ -37,3 +37,21 @@ def get_box_dimensions_for_line(x1: float, y1: float, x2: float, y2: float, line
         width, height = abs(x1 - x2), linewidth
     dimension = Dimensions((x, y), width, height, page_size)
     return dimension
+
+
+def prepare_for_plotting(person: Person, family_parents: Family, families: List[Family]) -> Tuple[Family, List[Family]]:
+    pt = person.gedcom_element.get_pointer()
+
+    for ii in range(len(families)):
+        if families[ii].parent1.gedcom_element.get_pointer() == pt:
+            families[ii].parent1, families[ii].parent2 = families[ii].parent2, families[ii].parent1
+
+    if family_parents:
+        family_parents.one_child_already_plotted = True
+        children = []
+        for child in family_parents.children:
+            if child.gedcom_element.get_pointer() != pt:
+                children.append(child)
+        family_parents.children = children
+
+    return family_parents, families

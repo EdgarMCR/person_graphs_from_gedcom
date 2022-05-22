@@ -14,9 +14,11 @@ class Person:
     last_name: str = ''
 
     birth_date: Optional[dt] = None
+    birth_date_year: Optional[int] = None
     birth_place: str = ''
 
     death_date: Optional[dt] = None
+    death_date_year: Optional[int] = None
     death_place: str = ''
 
     sex: Optional[Sex] = None
@@ -35,9 +37,11 @@ class Family:
     children: List[Person]
 
     marriage_date: Optional[dt] = None
+    marriage_date_year: Optional[int] = None
     marriage_place: str = ''
 
     divorce_date: Optional[dt] = None
+    divorce_date_year: Optional[int] = None
     divorce_place: str = ''
 
     # TODO: this shouldn't really be part of this dataclase - keep data and plotting separate!

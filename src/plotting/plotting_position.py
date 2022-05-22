@@ -24,6 +24,7 @@ def get_diagram_plot_position(page_info: PageInfo, family_parents: Optional[Fami
     boxes_to_plot, lines_to_plot = [], []
     page_info = calculate_box_page_and_column(page_info)
     main_person, main_person_position, is_father = None, None, None
+    ii = 0
     for ii, family in enumerate(families_person):
         if main_person is None:
             if family.father_plotted_top:
@@ -144,7 +145,12 @@ def plot_parents(family: Family, page_info: PageInfo, parent_column_index: int, 
 
         if (family.parent1 and family.parent2) or family.children:
             indentation = page_info.indentation * family_number
-            start = (family.spouse_already_plotted_position.x + indentation, family.spouse_already_plotted_position.y)
+            # TODO: something gets assigned wrong, this should be of a single type
+            if isinstance(family.spouse_already_plotted_position, tuple):
+                x, y = family.spouse_already_plotted_position
+            else:
+                x, y = family.spouse_already_plotted_position.x, family.spouse_already_plotted_position.y
+            start = (x + indentation, y)
             end = (plot_info_spouse1.x + indentation, plot_info_spouse1.y)
             lines_to_plot.append(LinePlotInfo(start, end))
 

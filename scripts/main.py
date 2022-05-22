@@ -1,7 +1,10 @@
+import re
 import time
+import logging
 from pathlib import Path
 from datetime import datetime as dt
 from typing import List, Optional, Tuple
+import unicodedata
 
 import matplotlib.pyplot as plt
 
@@ -13,6 +16,8 @@ from src.constants import Family, Person, Dimensions, PageInfo
 import src.parse_gedcom as pg
 import src.plotting.plotting_position as pp
 import src.plotting.plot_with_matplotlib as pwm
+import src.plotting.utility as pu
+
 
 
 # Initialize the parser
@@ -173,20 +178,65 @@ def create_mini_graph(fname: str, lname: str, path: Path):
     ax.text(0, 10, name, fontsize=14, ha='center', va='top', bbox=props)
     plt.show()
 
+def slugify(value, allow_unicode=False):
+    """
+    Taken from https://github.com/django/django/blob/master/django/utils/text.py
+    Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
+    dashes to single dashes. Remove characters that aren't alphanumerics,
+    underscores, or hyphens. Convert to lowercase. Also strip leading and
+    trailing whitespace, dashes, and underscores.
+    """
+    value = str(value)
+    if allow_unicode:
+        value = unicodedata.normalize('NFKC', value)
+    else:
+        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^\w\s-]', '', value.lower())
+    return re.sub(r'[-\s]+', '-', value).strip('-_')
 
-def main():
-    path = Path('../FamilyTree_Dec2021.ged')
-    root = pg.load_file(path)
-    fn, ln = 'Magdalena', 'Sadowska'
-    person = pg.get_person_by_name(fname=fn, lname=ln, root_child_elements=root)
+
+def plot_person_graph(person: Person, root, save_folder: Path):
     family_parents, families = pg.get_all_families_for_individual(person.gedcom_element, root)
+
+    family_parents, families = pu.prepare_for_plotting(person, family_parents, families)
     page_info = PageInfo(page_width=10, page_height=None, margin=(0.05, 0.05), gap=(0.5, 0.2), minimum_gap_y=0.05)
     boxes_to_plot, lines_to_plot, page_info = pp.get_diagram_plot_position(page_info, family_parents,
                                                                            families_person=families)
     fig = pwm.plot_on_figure(page_info, boxes_to_plot, lines_to_plot)
-    plt.show()
+    fn, ln = person.first_name.split(' ')[0], person.last_name
+    date = ''
+    if person.birth_date:
+        date = person.birth_date.strftime('%Y')
+    if person.birth_date_year:
+        date = person.birth_date_year
+    save_name = '{}_{}_{}'.format(fn, ln, date)
+    save_name = slugify(save_name, allow_unicode=False) + '.png'
+    plt.savefig(save_folder / save_name, dpi=150)
+    plt.close(fig)
+
+
+
+def plot_all_person_graphs(root, folder: Path):
+    for element in root:
+        if isinstance(element, IndividualElement):
+            person = pg.convert_gedcom_to_person(element)
+            logging.info("Doing {} {}".format(person.first_name, person.last_name))
+            plot_person_graph(person, root, folder)
+
+
+def main():
+    logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
+    path = Path('../Sofia_22May2022.ged')
+    root = pg.load_file(path)
+    fn, ln = 'Magdalena', 'Sadowska'
+    person = pg.get_person_by_name(fname=fn, lname=ln, root_child_elements=root)
+    folder = Path(r'E:\person_graphs')
+    # plot_person_graph(person, root, folder)
+
+
     # try_out_parser(path)
     # create_mini_graph(fn, ln, path)
+    plot_all_person_graphs(root, folder)
 
 
 if __name__ == "__main__":
