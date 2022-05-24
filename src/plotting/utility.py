@@ -21,10 +21,14 @@ def get_dimensional_size(position: Tuple[float, float], dimensions: Tuple[float,
 
 
 def get_string_for_event(date: Optional[dt], place: str, prefix: str) -> str:
-    if date:
+    if place and date:
         text = '{} {} {}'.format(prefix, date.strftime('%d/%m/%Y'), place)
-    else:
+    elif place:
         text = '{} {}'.format(prefix, place)
+    elif date:
+        text = '{} {}'.format(prefix, date.strftime('%d/%m/%Y'))
+    else:
+        text = ''
     return text
 
 
@@ -46,7 +50,7 @@ def prepare_for_plotting(person: Person, family_parents: Family, families: List[
         if families[ii].parent1.gedcom_element.get_pointer() == pt:
             families[ii].parent1, families[ii].parent2 = families[ii].parent2, families[ii].parent1
 
-    if family_parents:
+    if family_parents and families:
         family_parents.one_child_already_plotted = True
         children = []
         for child in family_parents.children:

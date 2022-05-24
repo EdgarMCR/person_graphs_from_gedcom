@@ -28,14 +28,14 @@ def plot_person_box(box: BoxPlotInfo, page_info: PageInfo, fig: Figure) -> Figur
 
     if len(box.lines) == 3:
         x, y = left + (right - left) / 2, bottom + (top - bottom) * (13 / 24)
-        fig.text(x, y, box.lines[0].text, ha='center', va='bottom', fontsize=box.lines[0].font_size, weight='bold')
+        fig.text(x, y, box.lines[0].text, ha='center', va='bottom', fontfamily='serif', fontsize=box.lines[0].font_size, weight='bold')
         x, y = left + (right - left) / 2, bottom + (top - bottom) * (4 / 12)
-        fig.text(x, y, box.lines[1].text, ha='center', va='bottom', fontsize=box.lines[1].font_size, weight='bold')
+        fig.text(x, y, box.lines[1].text, ha='center', va='bottom', fontfamily='serif', fontsize=box.lines[1].font_size)
         x, y = left + (right - left) / 2, bottom + (top - bottom) * (1 / 12)
-        fig.text(x, y, box.lines[2].text, ha='center', va='bottom', fontsize=box.lines[2].font_size, weight='bold')
+        fig.text(x, y, box.lines[2].text, ha='center', va='bottom', fontfamily='serif', fontsize=box.lines[2].font_size)
     elif len(box.lines) == 1:
         x, y = left + (right - left) / 2, bottom + (top - bottom) / 2
-        fig.text(x, y, box.lines[0].text, ha='center', va='center', fontsize=box.lines[0].font_size, weight='bold')
+        fig.text(x, y, box.lines[0].text, ha='center', va='center', fontfamily='serif', fontsize=box.lines[0].font_size)
 
     return fig
 

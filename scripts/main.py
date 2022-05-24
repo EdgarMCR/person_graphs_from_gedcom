@@ -1,4 +1,5 @@
 import re
+import math
 import time
 import logging
 from pathlib import Path
@@ -12,8 +13,9 @@ from gedcom.element.individual import IndividualElement
 from gedcom.element.family import FamilyElement
 from gedcom.parser import Parser
 
-from src.constants import Family, Person, Dimensions, PageInfo
+from src.constants import Family, Person, Dimensions, PageInfo, Sex
 import src.parse_gedcom as pg
+import src.summary_creator as sc
 import src.plotting.plotting_position as pp
 import src.plotting.plot_with_matplotlib as pwm
 import src.plotting.utility as pu
@@ -195,6 +197,7 @@ def slugify(value, allow_unicode=False):
     return re.sub(r'[-\s]+', '-', value).strip('-_')
 
 
+
 def plot_person_graph(person: Person, root, save_folder: Path):
     family_parents, families = pg.get_all_families_for_individual(person.gedcom_element, root)
 
@@ -220,17 +223,25 @@ def plot_all_person_graphs(root, folder: Path):
     for element in root:
         if isinstance(element, IndividualElement):
             person = pg.convert_gedcom_to_person(element)
+            if not person.birth_date or not person.birth_date_year or person.birth_date_year < 1800:
+                continue
             logging.info("Doing {} {}".format(person.first_name, person.last_name))
             plot_person_graph(person, root, folder)
+
+            text = sc.get_summary_text(person, root) + '\n'
+            print(text)
+            with open(folder / 'summaries.txt', 'a', encoding='utf8') as f:
+                f.write(text)
 
 
 def main():
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
-    path = Path('../Sofia_22May2022.ged')
+    path = Path('../Sofia_24May2022.ged')
     root = pg.load_file(path)
-    fn, ln = 'Magdalena', 'Sadowska'
+    fn, ln = 'Jan', 'Solowij'
     person = pg.get_person_by_name(fname=fn, lname=ln, root_child_elements=root)
     folder = Path(r'E:\person_graphs')
+    # print(sc.get_summary_text(person, root))
     # plot_person_graph(person, root, folder)
 
 
