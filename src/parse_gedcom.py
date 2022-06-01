@@ -44,6 +44,21 @@ def get_person_families(person: Person, root_child_elements) -> Tuple[Optional[F
      return parent_family, families
 
 
+def get_all_persons_by_name(fname: str, lname: str, root_child_elements) -> List[Person]:
+    persons = []
+    # Iterate through all root child elements
+    for element in root_child_elements:
+
+        # Is the "element" an actual "IndividualElement"?
+        # (Allows usage of extra functions such as "surname_match" and "get_name".)
+        if isinstance(element, IndividualElement):
+            # Unpack the name tuple
+            (first, last) = element.get_name()
+            if fname == first and lname == last:
+                persons.append(convert_gedcom_to_person(element))
+    return persons
+
+
 def get_person_by_name(fname: str, lname: str, root_child_elements) -> Optional[Person]:
     person = None
     # Iterate through all root child elements
@@ -77,8 +92,10 @@ def convert_gedcom_to_person(element: IndividualElement) -> Person:
     person = Person()
     person.first_name, person.last_name = element.get_name()
 
-    person.birth_place, person.birth_date, person.birth_date_year = get_event_place_and_date(BIRTH, element)
-    person.death_place, person.death_date, person.birth_date_year = get_event_place_and_date(DEATH, element)
+    person.birth_place, person.birth_date_str, person.birth_date, person.birth_date_year = \
+        get_event_place_and_date(BIRTH, element)
+    person.death_place, person.death_date_str, person.death_date, person.death_date_year = \
+        get_event_place_and_date(DEATH, element)
 
     person.sex = get_element_value(SEX, element)
 
@@ -97,8 +114,8 @@ def get_family_element(id: str, root_child_elements) -> Optional[FamilyElement]:
     return family
 
 
-def get_event_place_and_date(tag: str, element: Element) -> Tuple[Optional[str], Optional[dt], Optional[int]]:
-    place, d, ds = None, None, None
+def get_event_place_and_date(tag: str, element: Element) -> Tuple[Optional[str], str, Optional[dt], Optional[int]]:
+    place, date, d, ds = None, '', None, None
     event = get_child_element(tag, element)
     if event:
         place = get_element_value(PLACE, event)
@@ -110,7 +127,7 @@ def get_event_place_and_date(tag: str, element: Element) -> Tuple[Optional[str],
             except ValueError:
                 if match := re.search(r'\d{4}', date):
                     ds = int(match.group())
-    return place, d, ds
+    return place, date, d, ds
 
 
 def get_child_element(tag: str, element: Element) -> Optional[Element]:
@@ -181,12 +198,12 @@ def get_family_for_individual(person: IndividualElement, root, person_is_child: 
         elif len(parents) == 1:
             p1 = parents[0]
 
-        marriage_place, marriage_date, marriage_year = get_event_place_and_date(MARRIAGE, fam_ele)
-        divorce_place, divorce_date, divorce_year = get_event_place_and_date(DIVORCE, fam_ele)
+        marriage_place, mds, marriage_date, marriage_year = get_event_place_and_date(MARRIAGE, fam_ele)
+        divorce_place, dds, divorce_date, divorce_year = get_event_place_and_date(DIVORCE, fam_ele)
 
-        fam = Family(parent1=p1, parent2=p2, children=children, marriage_place=marriage_place,
+        fam = Family(parent1=p1, parent2=p2, children=children, marriage_place=marriage_place, marriage_date_str=mds,
                      marriage_date=marriage_date, marriage_date_year=marriage_year, divorce_place=divorce_place,
-                     divorce_date=divorce_date, divorce_date_year=divorce_year)
+                     divorce_date_str=dds, divorce_date=divorce_date, divorce_date_year=divorce_year)
         families.append(fam)
     return families
 

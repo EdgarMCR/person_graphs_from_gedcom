@@ -49,8 +49,8 @@ def get_diagram_plot_position(page_info: PageInfo, family_parents: Optional[Fami
         lines_to_plot += lines_to_plot_
 
     if family_parents:
-        boxes_to_plot_, lines_to_plot_, page_info = get_family_plot_position(family_parents, page_info,
-                                                                         parent_column_index=0, family_number=ii)
+        boxes_to_plot_, lines_to_plot_, page_info = get_family_plot_position(
+            family_parents, page_info, parent_column_index=0, family_number=ii)
         boxes_to_plot += boxes_to_plot_
         lines_to_plot += lines_to_plot_
 
@@ -236,9 +236,9 @@ def add_person_box(person: Person, column_index: int, page_info: PageInfo) -> Tu
         if person.last_name:
             ln = person.last_name
         line1 = TextInfo('{} {}'.format(fn, ln), page_info.font_size_large)
-        text = pu.get_string_for_event(person.birth_date, person.birth_place, 'b.')
+        text = pu.get_string_for_event(person.birth_date_str, person.birth_date, person.birth_place, 'b.')
         line2 = TextInfo(text, page_info.font_size_small)
-        text = pu.get_string_for_event(person.death_date, person.death_place, 'd.')
+        text = pu.get_string_for_event(person.death_date_str, person.death_date, person.death_place, 'd.')
         line3 = TextInfo(text, page_info.font_size_small)
         lines = [line1, line2, line3]
 
@@ -255,7 +255,7 @@ def add_marriage_box(family: Family, column_index: int, page_info: PageInfo) -> 
     y = page_info.column_top_position[column_index] + box_height / 2.
     page_info.column_top_position[column_index] += box_height
 
-    text = pu.get_string_for_event(family.marriage_date, family.marriage_place, 'm.')
+    text = pu.get_string_for_event(family.marriage_date_str, family.marriage_date, family.marriage_place, 'm.')
     line = TextInfo(text, page_info.font_size_small)
     plot_info = BoxPlotInfo(x, y, page_info.box_size[0], box_height, lines=[line])
 

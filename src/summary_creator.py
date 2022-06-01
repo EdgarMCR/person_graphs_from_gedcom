@@ -16,7 +16,7 @@ def get_summary_text(person: Person, root) -> str:
     name = person.first_name + ' ' + person.last_name
     text += get_even_text(name, 'was born', person.birth_date, person.birth_date_year, person.birth_place)
     text += ' ' + add_family_details(person, root)
-    text += ' ' + get_even_text(person.first_name, 'died', person.death_date, person.death_date_year, person.death_place)
+    text += ' ' + get_even_text(person.first_name, 'died', person.death_date, person.death_date_year, person.death_place, person)
     text = text.replace('  ', ' ').replace(' .', '.')
     return text.strip()
 
@@ -85,16 +85,23 @@ def add_family_details(person: Person, root):
     return text
 
 
-def get_even_text(pronoun: str, action: str, date: Optional[dt], date_year: Optional[int], place: Optional[str]) -> str:
+def get_even_text(pronoun: str, action: str, date: Optional[dt], date_year: Optional[int], place: Optional[str],
+                  person: Optional[Person] = None) -> str:
     text = ''
     date_str = None
     if date:
         date_str = date.strftime('%d/%m/%Y')
     elif date_year:
         date_str = str(date_year)
+        date = dt(date_year, 1, 1)
 
     if date_str or place:
-        text += '{} {} '.format(pronoun, action)
+
+        if person and person.birth_date and date:
+            text += '{} {}, aged {} '.format(pronoun, action, math.floor((date-person.birth_date).days/365))
+        else:
+            text += '{} {} '.format(pronoun, action)
+
         if date_str:
             text += '{} '.format(date_str)
         if place:

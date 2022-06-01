@@ -11,6 +11,7 @@ import matplotlib.patches as patches
 
 from src.constants import Person, Family, Dimensions
 
+DT_FMT = '%d/%m/%Y'
 
 def get_non_dimensional_size(position: Tuple[float, float], dimensions: Tuple[float, float]) -> Tuple[float, float]:
     return position[0] / dimensions[0], position[1] / dimensions[1]
@@ -20,16 +21,28 @@ def get_dimensional_size(position: Tuple[float, float], dimensions: Tuple[float,
     return position[0] * dimensions[0], position[1] * dimensions[1]
 
 
-def get_string_for_event(date: Optional[dt], place: str, prefix: str) -> str:
+def get_string_for_event(date_str: str, date_dt: Optional[dt], place: str, prefix: str) -> str:
+    if date_dt:
+        date = date_dt.strftime(DT_FMT)
+    else:
+        date = date_str
+    place = trim_place_length(place)
     if place and date:
-        text = '{} {} {}'.format(prefix, date.strftime('%d/%m/%Y'), place)
+        text = '{} {} {}'.format(prefix, date, place)
     elif place:
         text = '{} {}'.format(prefix, place)
     elif date:
-        text = '{} {}'.format(prefix, date.strftime('%d/%m/%Y'))
+        text = '{} {}'.format(prefix, date)
     else:
         text = ''
     return text
+
+
+def trim_place_length(place: Optional[str], max_len: int = 26) -> Optional[str]:
+    if place and len(place) > max_len:
+        parts = place.split(', ')
+        place = ', '.join(parts[1:])
+    return place
 
 
 def get_box_dimensions_for_line(x1: float, y1: float, x2: float, y2: float, linewidth: float,

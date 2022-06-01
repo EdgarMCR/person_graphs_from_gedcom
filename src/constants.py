@@ -13,10 +13,12 @@ class Person:
     first_name: str = ''
     last_name: str = ''
 
+    birth_date_str: str = ''
     birth_date: Optional[dt] = None
     birth_date_year: Optional[int] = None
     birth_place: str = ''
 
+    death_date_str: str = ''
     death_date: Optional[dt] = None
     death_date_year: Optional[int] = None
     death_place: str = ''
@@ -36,10 +38,12 @@ class Family:
 
     children: List[Person]
 
+    marriage_date_str: str = ''
     marriage_date: Optional[dt] = None
     marriage_date_year: Optional[int] = None
     marriage_place: str = ''
 
+    divorce_date_str: str = ''
     divorce_date: Optional[dt] = None
     divorce_date_year: Optional[int] = None
     divorce_place: str = ''
@@ -98,8 +102,8 @@ class PageInfo:
     minimum_gap_y: float
 
     indentation: float = 0.1
-    font_size_large: int = 12
-    font_size_small: int = 6
+    font_size_large: int = 10  # 12
+    font_size_small: int = 8  # 6
 
     # to be used internally, should I split this into another class?
     dpi: float = 72.

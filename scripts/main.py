@@ -197,12 +197,12 @@ def slugify(value, allow_unicode=False):
     return re.sub(r'[-\s]+', '-', value).strip('-_')
 
 
-
 def plot_person_graph(person: Person, root, save_folder: Path):
     family_parents, families = pg.get_all_families_for_individual(person.gedcom_element, root)
 
     family_parents, families = pu.prepare_for_plotting(person, family_parents, families)
-    page_info = PageInfo(page_width=10, page_height=None, margin=(0.05, 0.05), gap=(0.5, 0.2), minimum_gap_y=0.05)
+    page_info = PageInfo(page_width=9, page_height=None, margin=(0.05, 0.05), gap=(0.5, 0.15), minimum_gap_y=0.05,
+                         font_size_large=10, font_size_small=9)
     boxes_to_plot, lines_to_plot, page_info = pp.get_diagram_plot_position(page_info, family_parents,
                                                                            families_person=families)
     fig = pwm.plot_on_figure(page_info, boxes_to_plot, lines_to_plot)
@@ -214,16 +214,16 @@ def plot_person_graph(person: Person, root, save_folder: Path):
         date = person.birth_date_year
     save_name = '{}_{}_{}'.format(fn, ln, date)
     save_name = slugify(save_name, allow_unicode=False) + '.png'
+    print("Saving as `{}`".format(save_name))
     plt.savefig(save_folder / save_name, dpi=150)
     plt.close(fig)
-
 
 
 def plot_all_person_graphs(root, folder: Path):
     for element in root:
         if isinstance(element, IndividualElement):
             person = pg.convert_gedcom_to_person(element)
-            if not person.birth_date or not person.birth_date_year or person.birth_date_year < 1800:
+            if person.birth_date_year and person.birth_date_year < 1870:
                 continue
             logging.info("Doing {} {}".format(person.first_name, person.last_name))
             plot_person_graph(person, root, folder)
@@ -236,18 +236,21 @@ def plot_all_person_graphs(root, folder: Path):
 
 def main():
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
-    path = Path('../Sofia_24May2022.ged')
+    path = Path('../Sofia.ged')
     root = pg.load_file(path)
-    fn, ln = 'Jan', 'Solowij'
-    person = pg.get_person_by_name(fname=fn, lname=ln, root_child_elements=root)
+    fn, ln = 'Magdalena', 'Sadowska'
+    fn, ln = 'Irena', 'Solowij'
+    # person = pg.get_person_by_name(fname=fn, lname=ln, root_child_elements=root)
+    persons = pg.get_all_persons_by_name(fname=fn, lname=ln, root_child_elements=root)
+    person = persons[0]
     folder = Path(r'E:\person_graphs')
-    # print(sc.get_summary_text(person, root))
-    # plot_person_graph(person, root, folder)
+    print(sc.get_summary_text(person, root))
+    plot_person_graph(person, root, folder)
 
 
     # try_out_parser(path)
     # create_mini_graph(fn, ln, path)
-    plot_all_person_graphs(root, folder)
+    # plot_all_person_graphs(root, folder)
 
 
 if __name__ == "__main__":

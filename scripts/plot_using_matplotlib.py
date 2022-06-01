@@ -123,27 +123,27 @@ def try_4():
 
 
 def try_5():
-    page_info = PageInfo(page_width=10, page_height=None, margin=(0.05, 0.05), gap=(0.5, 0.2), minimum_gap_y=0.05)
-    main = Person('Firstname', 'Lastname', dt(1970, 1, 1), 'Hamburg, DE', dt(1970, 1, 1), 'Fultonham, NY, USA')
-    spouse = Person('Spouse', 'Lastname', dt(1970, 1, 1), 'Hamburg, DE', dt(1970, 1, 1), 'Fultonham, NY, USA')
+    page_info = PageInfo(page_width=10, page_height=None, margin=(0.05, 0.05), gap=(0.5, 0.15), minimum_gap_y=0.05)
+    main = Person('Firstname', 'Lastname', dt(1970, 1, 1), 1970, 'Hamburg, DE', dt(1970, 1, 1), 1970, 'Fultonham, NY, USA')
+    spouse = Person('Spouse', 'Lastname', dt(1970, 1, 1), 1970, 'Hamburg, DE', dt(1970, 1, 1), 1970, 'Fultonham, NY, USA')
 
-    mother = Person('Parent1', 'Lastname', dt(1950, 1, 1), 'Hamburg, DE', dt(1950, 1, 1), 'Fultonham, NY, USA')
-    father = Person('Parent2', 'Lastname', dt(1950, 1, 1), 'Hamburg, DE', dt(1950, 1, 1), 'Fultonham, NY, USA')
+    mother = Person('Parent1', 'Lastname', dt(1950, 1, 1), 1970, 'Hamburg, DE', dt(1950, 1, 1), 1970, 'Fultonham, NY, USA')
+    father = Person('Parent2', 'Lastname', dt(1950, 1, 1), 1970, 'Hamburg, DE', dt(1950, 1, 1), 1970, 'Fultonham, NY, USA')
 
-    p = Person('Child1', 'Lastname', dt(1950, 1, 1), 'Hamburg, DE', dt(1950, 1, 1), 'Fultonham, NY, USA')
-    p2 = Person('Child2', 'Lastname', dt(1951, 1, 1), 'Hamburg, DE', dt(1950, 1, 1), 'Fultonham, NY, USA')
-    p3 = Person('Child3', 'Lastname', dt(1952, 1, 1), 'Hamburg, DE', dt(1950, 1, 1), 'Fultonham, NY, USA')
+    p = Person('Child1', 'Lastname', dt(1950, 1, 1),  1970,'Hamburg, DE', dt(1950, 1, 1), 1970, 'Fultonham, NY, USA')
+    p2 = Person('Child2', 'Lastname', dt(1951, 1, 1), 1970, 'Hamburg, DE', dt(1950, 1, 1), 1970, 'Fultonham, NY, USA')
+    p3 = Person('Child3', 'Lastname', dt(1952, 1, 1), 1970, 'Hamburg, DE', dt(1950, 1, 1), 1970, 'Fultonham, NY, USA')
 
-    spouse2 = Person('Spouse2', 'Lastname', dt(1970, 1, 1), 'Hamburg, DE', dt(1970, 1, 1), 'Fultonham, NY, USA')
+    spouse2 = Person('Spouse2', 'Lastname', dt(1970, 1, 1), 1970, 'Hamburg, DE', dt(1970, 1, 1), 1970, 'Fultonham, NY, USA')
 
-    p4 = Person('Child4', 'Lastname', dt(1950, 1, 1), 'Hamburg, DE', dt(1950, 1, 1), 'Fultonham, NY, USA')
-    p5 = Person('Child5', 'Lastname', dt(1951, 1, 1), 'Hamburg, DE', dt(1950, 1, 1), 'Fultonham, NY, USA')
+    p4 = Person('Child4', 'Lastname', dt(1950, 1, 1), 1970, 'Hamburg, DE', dt(1950, 1, 1), 1970, 'Fultonham, NY, USA')
+    p5 = Person('Child5', 'Lastname', dt(1951, 1, 1), 1970, 'Hamburg, DE', dt(1950, 1, 1), 1970, 'Fultonham, NY, USA')
 
-    person = Person('Sibling1', 'Lastname', dt(1950, 1, 1), 'Hamburg, DE', dt(1950, 1, 1), 'Fultonham, NY, USA')
-    person2 = Person('Sibling2', 'Lastname', dt(1951, 1, 1), 'Hamburg, DE', dt(1950, 1, 1), 'Fultonham, NY, USA')
-    person3 = Person('Siblings3', 'Lastname', dt(1952, 1, 1), 'Hamburg, DE', dt(1950, 1, 1), 'Fultonham, NY, USA')
-    person4 = Person('Siblings4', 'Lastname', dt(1953, 1, 1), 'Hamburg, DE', dt(1950, 1, 1), 'Fultonham, NY, USA')
-    person5 = Person('Siblings5', 'Lastname', dt(1954, 1, 1), 'Hamburg, DE', dt(1950, 1, 1), 'Fultonham, NY, USA')
+    person = Person('Sibling1', 'Lastname', dt(1950, 1, 1), 1970, 'Hamburg, DE', dt(1950, 1, 1), 1970, 'Fultonham, NY, USA')
+    person2 = Person('Sibling2', 'Lastname', dt(1951, 1, 1), 1970, 'Hamburg, DE', dt(1950, 1, 1), 1970, 'Fultonham, NY, USA')
+    person3 = Person('Siblings3', 'Lastname', dt(1952, 1, 1), 1970, 'Hamburg, DE', dt(1950, 1, 1), 1970, 'Fultonham, NY, USA')
+    person4 = Person('Siblings4', 'Lastname', dt(1953, 1, 1), 1970, 'Hamburg, DE', dt(1950, 1, 1), 1970, 'Fultonham, NY, USA')
+    person5 = Person('Siblings5', 'Lastname', dt(1954, 1, 1), 1970, 'Hamburg, DE', dt(1950, 1, 1), 1970, 'Fultonham, NY, USA')
 
     family_parents = Family(father, mother, [person, person2, person3, person4, person5], dt(1980, 1, 1),
                             'Someplace, PL', one_child_already_plotted=True)
@@ -161,8 +161,8 @@ def main():
     logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)s %(message)s', datefmt='%H:%M:%S',
                         level=logging.INFO)
     logging.getLogger().setLevel(logging.INFO)
-    tried_with_matplotlib()
-    # try_5()
+    # tried_with_matplotlib()
+    try_5()
 
 
 if __name__ == "__main__":
