@@ -54,12 +54,14 @@ def get_diagram_plot_position(page_info: PageInfo, family_parents: Optional[Fami
         boxes_to_plot += boxes_to_plot_
         lines_to_plot += lines_to_plot_
 
-    boxes_to_plot, lines_to_plot, page_info = move_origin_from_bottom_to_top_of_page(boxes_to_plot, lines_to_plot, page_info)
+    boxes_to_plot, lines_to_plot, page_info = move_origin_from_bottom_to_top_of_page(boxes_to_plot, lines_to_plot,
+                                                                                     page_info)
 
     return boxes_to_plot, lines_to_plot, page_info
 
 
-def move_origin_from_bottom_to_top_of_page(boxes_to_plot: List[BoxPlotInfo], lines_to_plot: List[LinePlotInfo], page_info: PageInfo) -> Tuple[BoxPlotInfo, LinePlotInfo, PageInfo]:
+def move_origin_from_bottom_to_top_of_page(boxes_to_plot: List[BoxPlotInfo], lines_to_plot: List[LinePlotInfo],
+                                           page_info: PageInfo) -> Tuple[BoxPlotInfo, LinePlotInfo, PageInfo]:
     max_y = 0
     for obj in boxes_to_plot:
         if max_y < obj.y + obj.h:
@@ -75,9 +77,8 @@ def move_origin_from_bottom_to_top_of_page(boxes_to_plot: List[BoxPlotInfo], lin
     boxes_to_plot_ = []
     for bp in boxes_to_plot:
         bp_ = dc(bp)
-        bp_.y  = max_y -bp.y
+        bp_.y = max_y - bp.y
         boxes_to_plot_.append(bp_)
-
 
     lines_to_plot_ = []
     for lp in lines_to_plot:
@@ -101,7 +102,7 @@ def calculate_box_page_and_column(page_info: PageInfo) -> PageInfo:
 
     # vertical stride based on fontsize
     # Expect 1 large line and two small lines
-    box_height = page_info.font_size_large/DPI + 2 * (page_info.font_size_small / DPI) + 0.1
+    box_height = page_info.font_size_large / DPI + 2 * (page_info.font_size_small / DPI) + 0.1
     y_stride = box_height + page_info.gap[1]
     page_info.box_size = (box_width, box_height)
     page_info.stride = (x_stride, y_stride)
@@ -174,42 +175,19 @@ def plot_children(family: Family, page_info: PageInfo, column_index: int, marria
                   family_number: int) -> Tuple[List, List, BoxPlotInfo]:
     boxes_to_plot, lines_to_plot = [], []
     if family.children:
+        boxes_to_plot, lines_to_plot, page_info = plot_all_children(family, page_info, marriage_box_position,
+                                                                    column_index, family_number)
+
+    if family.one_child_already_plotted:
         vertical_line_x = page_info.column_x[column_index - 1] + page_info.stride[0] / 2. + page_info.indentation
         # add indentation
         if family_number > 0:
             vertical_line_x -= page_info.indentation
 
-        # line from marriage box to vertical
         x_, y_ = marriage_box_position.x, marriage_box_position.y
-        lines_to_plot.append(LinePlotInfo((x_, y_), (vertical_line_x, y_)))
 
-        min_y, max_y = marriage_box_position.y, 0
-        for child in family.children:
-            plot_info_child, page_info = add_person_box(child, column_index, page_info)
-            page_info.column_top_position[column_index] += page_info.gap[1]
-            boxes_to_plot += [plot_info_child]
-
-            start = (vertical_line_x, plot_info_child.y)
-            end = (plot_info_child.x, plot_info_child.y)
-            lines_to_plot.append(LinePlotInfo(start, end))
-
-            if min_y > plot_info_child.y:
-                min_y = plot_info_child.y
-            if max_y < plot_info_child.y:
-                max_y = plot_info_child.y
-
-        # vertical line
-        start = (vertical_line_x, max_y)
-        end = (vertical_line_x, min_y)
-        lines_to_plot.append(LinePlotInfo(start, end))
-    if family.one_child_already_plotted:
         if not family.children:
-            vertical_line_x = page_info.column_x[column_index - 1] + page_info.stride[0] / 2. + page_info.indentation
-            # add indentation
-            if family_number > 0:
-                vertical_line_x -= page_info.indentation
             # line from marriage box to vertical
-            x_, y_ = marriage_box_position.x, marriage_box_position.y
             lines_to_plot.append(LinePlotInfo((x_, y_), (vertical_line_x, y_)))
 
         # vertical line up to main person
@@ -219,6 +197,43 @@ def plot_children(family: Family, page_info: PageInfo, column_index: int, marria
         # Line from vertical to main person
         x = page_info.column_x[column_index]
         lines_to_plot.append(LinePlotInfo((vertical_line_x, top_y), (x, top_y)))
+
+    return boxes_to_plot, lines_to_plot, page_info
+
+
+def plot_all_children(family: Family, page_info: PageInfo, marriage_box_position,
+                      column_index: int, family_number: int):
+
+    boxes_to_plot, lines_to_plot = [], []
+    vertical_line_x = page_info.column_x[column_index - 1] + page_info.stride[0] / 2. + page_info.indentation
+
+    # add indentation
+    if family_number > 0:
+        vertical_line_x -= page_info.indentation
+
+    # line from marriage box to vertical
+    x_, y_ = marriage_box_position.x, marriage_box_position.y
+    lines_to_plot.append(LinePlotInfo((x_, y_), (vertical_line_x, y_)))
+
+    min_y, max_y = marriage_box_position.y, 0
+    for child in family.children:
+        plot_info_child, page_info = add_person_box(child, column_index, page_info)
+        page_info.column_top_position[column_index] += page_info.gap[1]
+        boxes_to_plot += [plot_info_child]
+
+        start = (vertical_line_x, plot_info_child.y)
+        end = (plot_info_child.x, plot_info_child.y)
+        lines_to_plot.append(LinePlotInfo(start, end))
+
+        if min_y > plot_info_child.y:
+            min_y = plot_info_child.y
+        if max_y < plot_info_child.y:
+            max_y = plot_info_child.y
+
+    # vertical line
+    start = (vertical_line_x, max_y)
+    end = (vertical_line_x, min_y)
+    lines_to_plot.append(LinePlotInfo(start, end))
 
     return boxes_to_plot, lines_to_plot, page_info
 

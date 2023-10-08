@@ -197,9 +197,48 @@ def slugify(value, allow_unicode=False):
     return re.sub(r'[-\s]+', '-', value).strip('-_')
 
 
-def plot_person_graph(person: Person, root, save_folder: Path):
+def plot_person_graph_a5(person: Person, root, save_folder: Path, ):
+    """ A5 Plot Version """
+    pass
+
+
+def plot_person_graph(person: Person, root, save_folder: Path, output_size: str = 'A4'):
     family_parents, families = pg.get_all_families_for_individual(person.gedcom_element, root)
 
+    if not families or (not families[0].parent1.first_name and not families[0].parent2.first_name):
+        logging.warning("No first name for person {}".format(person))
+        return
+
+    output_size = output_size.lower()
+    if output_size == 'a4':
+        plot_person_graph_a4(person, family_parents, families, save_folder)
+    elif output_size == 'a5':
+        plot_person_graph_a5(person, family_parents, families, save_folder)
+    else:
+        raise ValueError('Size `{}` not supported'.format(output_size))
+
+
+def plot_person_graph_a5(person: Person, family_parents: Family, families: List[Family], save_folder: Path):
+    family_parents, families = pu.prepare_for_plotting(person, family_parents, families)
+    page_info = PageInfo(page_width=6, page_height=None, margin=(0.05, 0.05), gap=(0.5, 0.15), minimum_gap_y=0.05,
+                         font_size_large=8, font_size_small=7)
+    boxes_to_plot, lines_to_plot, page_info = pp.get_diagram_plot_position(page_info, family_parents,
+                                                                           families_person=families)
+    fig = pwm.plot_on_figure(page_info, boxes_to_plot, lines_to_plot)
+    fn, ln = person.first_name.split(' ')[0], person.last_name
+    date = ''
+    if person.birth_date:
+        date = person.birth_date.strftime('%Y')
+    if person.birth_date_year:
+        date = person.birth_date_year
+    save_name = '{}_{}_{}'.format(fn, ln, date)
+    save_name = slugify(save_name, allow_unicode=False) + '.png'
+    print("Saving as `{}`".format(save_name))
+    plt.savefig(save_folder / save_name, dpi=150)
+    plt.close(fig)
+
+
+def plot_person_graph_a4(person: Person, family_parents: Family, families: List[Family], save_folder: Path):
     family_parents, families = pu.prepare_for_plotting(person, family_parents, families)
     page_info = PageInfo(page_width=9, page_height=None, margin=(0.05, 0.05), gap=(0.5, 0.15), minimum_gap_y=0.05,
                          font_size_large=10, font_size_small=9)
@@ -223,7 +262,7 @@ def plot_all_person_graphs(root, folder: Path):
     for element in root:
         if isinstance(element, IndividualElement):
             person = pg.convert_gedcom_to_person(element)
-            if person.birth_date_year and person.birth_date_year < 1870:
+            if person.birth_date_year and person.birth_date_year < 1850 or person.first_name is None:
                 continue
             logging.info("Doing {} {}".format(person.first_name, person.last_name))
             plot_person_graph(person, root, folder)
@@ -239,13 +278,13 @@ def main():
     path = Path('../Sofia.ged')
     root = pg.load_file(path)
     fn, ln = 'Magdalena', 'Sadowska'
-    fn, ln = 'Irena', 'Solowij'
+    fn, ln = 'Eva', 'Müller'
     # person = pg.get_person_by_name(fname=fn, lname=ln, root_child_elements=root)
     persons = pg.get_all_persons_by_name(fname=fn, lname=ln, root_child_elements=root)
     person = persons[0]
-    folder = Path(r'E:\person_graphs')
+    folder = Path(r'C:\Users\edgar\person_graphs\a5')
     print(sc.get_summary_text(person, root))
-    plot_person_graph(person, root, folder)
+    plot_person_graph(person, root, folder, output_size='A5')
 
 
     # try_out_parser(path)
