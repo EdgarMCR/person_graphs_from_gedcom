@@ -29,16 +29,19 @@ class TestUtility(TestCase):
         width, height = fig.get_size_inches() * fig.get_dpi()
         width, height = int(width), int(height)
         img = np.fromstring(canvas.tostring_rgb(), dtype='uint8').reshape(height, width, 3)
-        image = rgb2gray(img )
-        # plt.imshow(image)
-        # plt.show()
+        image = rgb2gray(img)
+        # plt.imshow(image, cmap='gray')
         h, w = image.shape
 
         # Get top third of image
-        top_strip = image[:int(h/3-2), :]
+        top_strip = image[:int(h/3)-2, :]
+
         self.assertTrue(np.min(top_strip) > 254)  # Should be all white
-        bottom_strip = image[int(2*h/3+100):, :]  # There is a shadow that extends a bit below the box
+        bottom_strip = image[int(2*h/3)+100:, :]  # There is a shadow that extends a bit below the box
         self.assertTrue(np.min(bottom_strip) > 254)  # Should be all white
 
         left = image[:, :int(h/3-2)]
+        # plt.figure()
+        # plt.imshow(left, cmap='gray')
+        # plt.show()
         self.assertTrue(np.min(left) > 254, 'left strip')  # Should be all white

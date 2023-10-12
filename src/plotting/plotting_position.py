@@ -203,6 +203,13 @@ def plot_children(family: Family, page_info: PageInfo, column_index: int, marria
 
 def plot_all_children(family: Family, page_info: PageInfo, marriage_box_position,
                       column_index: int, family_number: int):
+    """ Add lines and boxes to plot for the children of a family.
+
+    Lines:
+    - Add one horizontal line from the marriage box to the vertical line
+    - For each child, add a horizontal line from the vertical line to its box
+    - Add a vertical line
+    """
 
     boxes_to_plot, lines_to_plot = [], []
     vertical_line_x = page_info.column_x[column_index - 1] + page_info.stride[0] / 2. + page_info.indentation
@@ -215,7 +222,7 @@ def plot_all_children(family: Family, page_info: PageInfo, marriage_box_position
     x_, y_ = marriage_box_position.x, marriage_box_position.y
     lines_to_plot.append(LinePlotInfo((x_, y_), (vertical_line_x, y_)))
 
-    min_y, max_y = marriage_box_position.y, 0
+    min_y, max_y = marriage_box_position.y, marriage_box_position.y
     for child in family.children:
         plot_info_child, page_info = add_person_box(child, column_index, page_info)
         page_info.column_top_position[column_index] += page_info.gap[1]
