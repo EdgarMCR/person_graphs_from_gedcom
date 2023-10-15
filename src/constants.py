@@ -73,6 +73,7 @@ class Dimensions:
 class TextInfo:
     text: str
     font_size: float
+    bold: bool = False
 
 
 @dataclass
@@ -112,6 +113,7 @@ class PageInfo:
     num_cols: int = 3
     column_top_position: List = field(default_factory=lambda: [0, 0, 0])
     column_x: List = field(default_factory=lambda: [0, 0, 0])
+    minimize_y_or_x: str = 'y'
 
 
 

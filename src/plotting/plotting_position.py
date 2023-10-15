@@ -62,17 +62,9 @@ def get_diagram_plot_position(page_info: PageInfo, family_parents: Optional[Fami
 
 def move_origin_from_bottom_to_top_of_page(boxes_to_plot: List[BoxPlotInfo], lines_to_plot: List[LinePlotInfo],
                                            page_info: PageInfo) -> Tuple[BoxPlotInfo, LinePlotInfo, PageInfo]:
-    max_y = 0
-    for obj in boxes_to_plot:
-        if max_y < obj.y + obj.h:
-            max_y = obj.y + obj.h
-    for line in lines_to_plot:
-        y = max([line.end[1], line.start[1]])
-        if max_y < y:
-            max_y = y
 
-    max_y = max_y + page_info.margin[1]
-    page_info.page_height = max_y + page_info.margin[1]
+    max_y = max(page_info.column_top_position) - page_info.gap[1] + page_info.margin[1]
+    page_info.page_height = max_y
 
     boxes_to_plot_ = []
     for bp in boxes_to_plot:
@@ -87,6 +79,7 @@ def move_origin_from_bottom_to_top_of_page(boxes_to_plot: List[BoxPlotInfo], lin
         s, e = (s[0], max_y - s[1]), (e[0], max_y - e[1])
         lp_.start, lp_.end = s, e
         lines_to_plot_.append(lp_)
+
     return boxes_to_plot_, lines_to_plot_, page_info
 
 
@@ -100,12 +93,18 @@ def calculate_box_page_and_column(page_info: PageInfo) -> PageInfo:
     box_width = (page_info.page_width - 2 * page_info.margin[0] - (num_cols - 1) * page_info.gap[0]) / num_cols
     x_stride = box_width + page_info.gap[0]
 
-    # vertical stride based on fontsize
-    # Expect 1 large line and two small lines
-    box_height = page_info.font_size_large / DPI + 2 * (page_info.font_size_small / DPI) + 0.1
-    y_stride = box_height + page_info.gap[1]
-    page_info.box_size = (box_width, box_height)
-    page_info.stride = (x_stride, y_stride)
+    if page_info.minimize_y_or_x == 'x':
+        box_height = 2 * (page_info.font_size_large / DPI) + 4 * (page_info.font_size_small / DPI) + 0.1
+        y_stride = box_height + page_info.gap[1]
+        page_info.box_size = (box_width, box_height)
+        page_info.stride = (x_stride, y_stride)
+    else:
+        # vertical stride based on fontsize
+        # Expect 1 large line and two small lines
+        box_height = page_info.font_size_large / DPI + 2 * (page_info.font_size_small / DPI) + 0.1
+        y_stride = box_height + page_info.gap[1]
+        page_info.box_size = (box_width, box_height)
+        page_info.stride = (x_stride, y_stride)
 
     # This assumes 3 columns for now
     middle = page_info.page_width / 2.
@@ -246,40 +245,100 @@ def plot_all_children(family: Family, page_info: PageInfo, marriage_box_position
 
 
 def add_person_box(person: Person, column_index: int, page_info: PageInfo) -> Tuple[BoxPlotInfo, PageInfo]:
-    x = page_info.column_x[column_index]
-    y = page_info.column_top_position[column_index] + page_info.box_size[1] / 2.
-    page_info.column_top_position[column_index] += page_info.box_size[1]
-
     lines = []
+    box_height = page_info.box_size[1]
+
     if person:
         fn, ln = '', ''
         if person.first_name:
             fn = person.first_name
         if person.last_name:
             ln = person.last_name
-        line1 = TextInfo('{} {}'.format(fn, ln), page_info.font_size_large)
-        text = pu.get_string_for_event(person.birth_date_str, person.birth_date, person.birth_place, 'b.')
-        line2 = TextInfo(text, page_info.font_size_small)
-        text = pu.get_string_for_event(person.death_date_str, person.death_date, person.death_place, 'd.')
-        line3 = TextInfo(text, page_info.font_size_small)
-        lines = [line1, line2, line3]
 
-    plot_info = BoxPlotInfo(x, y, page_info.box_size[0], page_info.box_size[1], lines=lines)
+        if page_info.minimize_y_or_x == 'x':
+            line1 = TextInfo(fn, page_info.font_size_large, bold=True)
+            line2 = TextInfo(ln, page_info.font_size_large, bold=True)
+
+            bds, bdd, bp = _get_birth_details(person)
+            text1, text2 = pu.get_two_line_string_for_event(bds, bdd, bp, 'b.')
+            line3 = TextInfo(text1, page_info.font_size_small)
+            line4 = TextInfo(text2, page_info.font_size_small)
+
+            dds, ddd, dp = _get_death_details(person)
+            text1, text2 = pu.get_two_line_string_for_event(dds, ddd, dp, 'd.')
+            line5 = TextInfo(text1, page_info.font_size_small)
+            line6 = TextInfo(text2, page_info.font_size_small)
+
+            lines = [line1, line2, line3, line4, line5, line6]
+
+            leng = len([x for x in lines if x.text])
+            if leng < 6:
+                box_height = box_height * ((leng / 6) + 0.1)
+
+        else:
+            text = '{} {}'.format(fn, ln)
+            line1 = TextInfo(text, page_info.font_size_large, bold=True)
+
+            bds, bdd, bp = _get_birth_details(person)
+            text = pu.get_string_for_event(bds, bdd, bp, 'b.')
+            line2 = TextInfo(text, page_info.font_size_small)
+
+            dds, ddd, dp = _get_death_details(person)
+            text = pu.get_string_for_event(dds, ddd, dp, 'd.')
+            line3 = TextInfo(text, page_info.font_size_small)
+            lines = [line1, line2, line3]
+
+    x = page_info.column_x[column_index]
+    y = page_info.column_top_position[column_index] + box_height / 2.
+    page_info.column_top_position[column_index] += box_height
+
+    plot_info = BoxPlotInfo(x, y, page_info.box_size[0], box_height, lines=lines)
 
     return plot_info, page_info
 
 
+def _get_birth_details(person: Person) -> Tuple:
+    return person.birth_date_str, person.birth_date, person.birth_place
+
+def _get_death_details(person: Person) -> Tuple:
+    return person.death_date_str, person.death_date, person.death_place
+
+
+def _get_marriage_details(family: Family) -> Tuple:
+    return family.marriage_date_str, family.marriage_date, family.marriage_place
+
+
 def add_marriage_box(family: Family, column_index: int, page_info: PageInfo) -> Tuple[BoxPlotInfo, PageInfo]:
+    if page_info.minimize_y_or_x == 'x':
+        mds, mdd, mp = _get_marriage_details(family)
+        text1, text2 = pu.get_two_line_string_for_event(mds, mdd, mp, 'm.')
+        line1 = TextInfo(text1, page_info.font_size_small)
+        line2 = TextInfo(text2, page_info.font_size_small)
+        lines = [line1, line2]
+
+    else:
+        mds, mdd, mp = _get_marriage_details(family)
+        text = pu.get_string_for_event(mds, mdd, mp, 'm.')
+        lines = [TextInfo(text, page_info.font_size_small)]
+
     # fix size of marriage box here for now
-    box_height = page_info.font_size_small / DPI + 0.1
+    if page_info.minimize_y_or_x == 'x':
+        # Only make box as high as it needs to be
+        leng = len([x for x in lines if x])
+        if leng == 0:
+            box_height = (page_info.font_size_small / DPI) * 0.2 + 0.1
+        elif leng == 1:
+            box_height = (page_info.font_size_small / DPI)  + 0.1
+        else:
+            box_height = (page_info.font_size_small / DPI) * 2 + 0.1
+    else:
+        box_height = page_info.font_size_small / DPI + 0.1
 
     x = page_info.column_x[column_index] + page_info.indentation
     y = page_info.column_top_position[column_index] + box_height / 2.
     page_info.column_top_position[column_index] += box_height
 
-    text = pu.get_string_for_event(family.marriage_date_str, family.marriage_date, family.marriage_place, 'm.')
-    line = TextInfo(text, page_info.font_size_small)
-    plot_info = BoxPlotInfo(x, y, page_info.box_size[0], box_height, lines=[line])
+    plot_info = BoxPlotInfo(x, y, page_info.box_size[0], box_height, lines)
 
     return plot_info, page_info
 

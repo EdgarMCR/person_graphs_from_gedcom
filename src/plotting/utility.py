@@ -22,11 +22,9 @@ def get_dimensional_size(position: Tuple[float, float], dimensions: Tuple[float,
 
 
 def get_string_for_event(date_str: str, date_dt: Optional[dt], place: str, prefix: str) -> str:
-    if date_dt:
-        date = date_dt.strftime(DT_FMT)
-    else:
-        date = date_str
+    date = get_date_string_for_event(date_str, date_dt)
     place = trim_place_length(place)
+
     if place and date:
         text = '{} {} {}'.format(prefix, date, place)
     elif place:
@@ -36,6 +34,29 @@ def get_string_for_event(date_str: str, date_dt: Optional[dt], place: str, prefi
     else:
         text = ''
     return text
+
+
+def get_two_line_string_for_event(date_str: str, date_dt: Optional[dt], place: str, prefix: str) -> (str, str):
+    date = get_date_string_for_event(date_str, date_dt)
+    place = trim_place_length(place)
+
+    text1, text2 = '', ''
+    if place and date:
+        text1, text2 = f'{prefix} {date}', f'{place}'
+    elif place:
+        text1 = '{} {}'.format(prefix, place)
+    elif date:
+        text1 = '{} {}'.format(prefix, date)
+
+    return text1, text2
+
+
+def get_date_string_for_event(date_str: str, date_dt: Optional[dt]) -> str:
+    if date_dt:
+        date = date_dt.strftime(DT_FMT)
+    else:
+        date = date_str
+    return date
 
 
 def trim_place_length(place: Optional[str], max_len: int = 26) -> Optional[str]:
