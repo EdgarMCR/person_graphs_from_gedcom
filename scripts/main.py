@@ -217,10 +217,14 @@ def plot_person_graph_a5(person: Person, family_parents: Family, families: List[
     """ A5 Plot Version """
     family_parents, families = pu.prepare_for_plotting(person, family_parents, families)
     page_info = PageInfo(page_width=6, page_height=None, margin=(0.05, 0.05), gap=(0.5, 0.15), minimum_gap_y=0.05,
-                         font_size_large=8, font_size_small=7)
+                         font_size_large=9, font_size_small=8)
+
     page_info.minimize_y_or_x = 'x'
     boxes_to_plot, lines_to_plot, page_info = pp.get_diagram_plot_position(page_info, family_parents,
                                                                            families_person=families)
+    # print(f"{page_info.box_size=}")
+    # print(f"{page_info.font_size_large=}")
+    # print(f"{page_info.font_size_small=}")
     fig = pwm.plot_on_figure(page_info, boxes_to_plot, lines_to_plot)
     fn, ln = person.first_name.split(' ')[0], person.last_name
     date = ''
@@ -264,7 +268,11 @@ def plot_all_person_graphs(root, folder: Path, output_size: str):
                 continue
             logging.info("Doing {} {}".format(person.first_name, person.last_name))
             try:
-                plot_person_graph(person, root, folder, output_size)
+                if person.birth_date_year and person.birth_date_year < 1800:
+                    save_folder = folder / 'pre-1800'
+                else:
+                    save_folder = folder / 'post-1800'
+                plot_person_graph(person, root, save_folder, output_size)
             except Exception as exc:
                 logging.error(f"Failed for {person} with {exc}")
 
@@ -280,11 +288,11 @@ def main():
     root = pg.load_file(path)
     fn, ln = 'Anna', 'Solowij'
     # fn, ln = 'Eva', 'Müller'
-    fn, ln = 'Johann', 'Häner'
-    fn, ln = 'Bartholomäus', 'Winterer'
+    # fn, ln = 'Johann', 'Häner'
+    # fn, ln = 'Bartholomäus', 'Winterer'
     # person = pg.get_person_by_name(fname=fn, lname=ln, root_child_elements=root)
     persons = pg.get_all_persons_by_name(fname=fn, lname=ln, root_child_elements=root)
-    person = persons[1]
+    person = persons[0]
     folder = Path(r'C:\Users\edgar\person_graphs\a5')
     print(sc.get_summary_text(person, root))
     plot_person_graph(person, root, folder, output_size='A5')
